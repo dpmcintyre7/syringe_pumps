@@ -39,6 +39,7 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
         version_pump = self.write_read('VER', bytes=bytes)
         if(len(version_pump) == 0): # no response... probably not connected correctly or maybe a baud rate error 
             logging.error('%s: not connected to pump correctly at address %s',self.name, self.address)
+            self.serialcon.close()
             raise pumperror("Not connected to pump correctly")
         if(version_pump[-1]=="*"): #target volume had been reached, need to clear target volume then try again
             self.clear_target_volume(bytes=60)
@@ -48,43 +49,47 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
                 logging.info('%s: created at address %s', self.name,self.address)
             else: 
                 logging.error('%s: not connected to pump correctly at address %s',self.name, self.address)
+                self.serialcon.close()
                 raise pumperror("wrong address")
         else: #address is not 1 digit (2 digit address)
             if(version_pump[-3:-1] == self.address): #last 2 characters on response match address 
                 logging.info('%s: created at address %s', self.name,self.address)
             else:
                 logging.error('%s: not connected to pump correctly at address %s',self.name, self.address)
+                self.serialcon.close()
                 raise pumperror("wrong address")
         
     def set_dia(self,diameter,bytes=60): #sets diameter 
         if(float(diameter) > 45 or float(diameter) < 0.1): #checks if diameter is within 
             logging.error('%s: diameter (%s mm) is out of range', self.name,str(diameter))
+            self.serialcon.close()
             raise pumperror("diameter is out of range")
         if(len(remove_string_extras(str(diameter)))>6): #checks if diameter needs to be truncated 
             new_d = remove_string_extras(str(diameter))[0:6]
-            logging.error('%s: set diameter (%s mm) has been truncated to %s mm', self.name,str(diameter), str(new_d))
+            logging.info('%s: set diameter (%s mm) has been truncated to %s mm', self.name,str(diameter), str(new_d))
             diameter = new_d
         diam_resp = self.write_read('DIA', bytes=60) 
         diam_response = remove_string_extras(remove_string_extras(diam_resp[3:9]))
-        if(diam_response == remove_string_extras(str(diameter))): #checks if currently set diameter matches the new diameter argument 
+        if(float(diam_response) == float(remove_string_extras(str(diameter)))): #checks if currently set diameter matches the new diameter argument 
             logging.info('%s: did not update diameter because set diameter (%s mm) already matches diameter returned by pump (%s mm)', 
                          self.name,str(diameter),diam_response)
         else:   # if new diameter does not match the last set diameter, then diameter is updated
             self.write_read('DIA ' + str(diameter), bytes=60) 
             diam = self.write_read('DIA', bytes=60) #checks updated diameter matches the newly set diameter 
             dia_response = remove_string_extras(remove_string_extras(diam[3:9]))
-            if(dia_response == remove_string_extras(str(diameter))):
+            if(float(dia_response) == float(remove_string_extras(str(diameter)))):
                 logging.info('%s: diameter set to %s mm', self.name,str(diameter))
             else:
                 logging.error('%s: set diameter (%s mm) does not match diameter returned by pump (%s mm)', 
                               self.name,str(diameter),dia_response)
+                self.serialcon.close()
                 raise pumperror("Diameter not updated correctly")
         
     def set_infuse_rate(self,infuse_rate,infuse_rate_units): #sets the infuse rate (flow rate out from syringe)
         #choices=['ul/hr', 'ul/min', 'ml/hr', 'ml/min']
         if(len(remove_string_extras(str(infuse_rate)))>6): #checks if flow rate needs to be truncated 
             new_ir = remove_string_extras(str(infuse_rate))[0:6]
-            logging.error('%s: set infuse rate (%s %s) has been truncated to %s %s', 
+            logging.info('%s: set infuse rate (%s %s) has been truncated to %s %s', 
                           self.name,str(infuse_rate),infuse_rate_units, str(new_ir),infuse_rate_units)
             infuse_rate = new_ir
         if(infuse_rate_units == 'ml/min'): #command depends on rate units 
@@ -98,19 +103,21 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
         irate_resp = self.write_read('RAT', bytes=60) #reads updated flow rate
         if "Out of range" in irate:  # if flow rate is out of the range for the syringe's diameter 
             logging.error('%s: infuse rate (%s %s) is out of range', self.name,str(infuse_rate),infuse_rate_units)
+            self.serialcon.close()
             raise pumperror("Infuse rate is out of range")
-        if(remove_string_extras(irate_resp[3:9]).split(' ')[0] == str(infuse_rate)): #checks updated flow rate matches newly set flow rate
+        if(float(remove_string_extras(irate_resp[3:9]).split(' ')[0]) == float(infuse_rate)): #checks updated flow rate matches newly set flow rate
             logging.info('%s: infuse rate set to %s %s', self.name,str(infuse_rate),infuse_rate_units)
         else:
             logging.error('%s: set infuse rate (%s %s) does not match flowrate returned by pump (%s)', 
                          self.name,str(infuse_rate),infuse_rate_units, remove_string_extras(irate_resp[3:9]).split(' ')[0])
+            self.serialcon.close()
             raise pumperror("Infuse Rate not updated correctly")
     
     def set_withdraw_rate(self,withdraw_rate,withdraw_rate_units): #sets the withdraw rate (flow rate into syringe)
         #choices=['ul/hr', 'ul/min', 'ml/hr', 'ml/min']
         if(len(remove_string_extras(str(withdraw_rate)))>6): #checks if flow rate needs to be truncated 
             new_wr = remove_string_extras(str(withdraw_rate))[0:6]
-            logging.error('%s: set withdraw rate (%s %s) has been truncated to %s %s', 
+            logging.info('%s: set withdraw rate (%s %s) has been truncated to %s %s', 
                           self.name,str(withdraw_rate),withdraw_rate_units, str(new_wr),withdraw_rate_units)
             withdraw_rate = new_wr
         if(withdraw_rate_units == 'ml/min'): #command depends on rate units 
@@ -124,12 +131,14 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
         wrate_resp = self.write_read('RFR', bytes=60) #reads updated flow rate
         if "Out of range" in wrate: # if flow rate is out of the range for the syringe's diameter
             logging.error('%s: withdraw rate (%s %s) is out of range', self.name,str(withdraw_rate),withdraw_rate_units)
+            self.serialcon.close()
             raise pumperror("withdraw rate is out of range")
-        if(remove_string_extras(wrate_resp[3:9]).split(' ')[0] == str(withdraw_rate)): #checks updated flow rate matches newly set flow rate
+        if(float(remove_string_extras(wrate_resp[3:9]).split(' ')[0]) == float(withdraw_rate)): #checks updated flow rate matches newly set flow rate
             logging.info('%s: withdraw rate set to %s %s', self.name,str(withdraw_rate),withdraw_rate_units)
         else:
             logging.error('%s: set withdraw rate (%s %s) does not match flowrate returned by pump (%s)', 
                          self.name,str(withdraw_rate),withdraw_rate_units, remove_string_extras(wrate_resp[3:9]).split(' ')[0])   
+            self.serialcon.close()
             raise pumperror("Withdraw Rate not updated correctly")
 
 
@@ -140,7 +149,7 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
         target_volume = '{0:0.6f}'.format(float(target_volume))
         if(len(remove_string_extras(str(target_volume)))>6): #checks if target volume needs to be truncated 
             new_tv = remove_string_extras(str(target_volume))[0:6]
-            logging.error('%s: set target volume (%s ml) has been truncated to %s ml', 
+            logging.info('%s: set target volume (%s ml) has been truncated to %s ml', 
                           self.name,str(target_volume), str(new_tv))
             target_volume = new_tv
         self.write_read('TGT ' + str(target_volume), bytes=bytes) #sets target volume 
@@ -157,7 +166,7 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
         syringe_volume = '{0:0.6f}'.format(float(syringe_volume))
         if(len(remove_string_extras(str(syringe_volume)))>6): #checks if syringe volume needs to be truncated 
             new_tv = remove_string_extras(str(syringe_volume))[0:6]
-            logging.error('%s: set syringe volume (%s ml) has been truncated to %s ml', 
+            logging.info('%s: set syringe volume (%s ml) has been truncated to %s ml', 
                           self.name,str(syringe_volume), str(new_tv))
             syringe_volume = new_tv
         self.write_read('SYR ' + str(syringe_volume), bytes=bytes) #sets syringe volume 
@@ -170,6 +179,7 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
             logging.info('%s: stopped',self.name)
         else: 
             logging.error('%s: Incorrect response to stop',self.name)
+            self.serialcon.close()
             raise pumperror("Incorrect response to stop")
     
     def set_irun(self,bytes=60): #sets pump to infuse (flow out from syringe)
@@ -179,6 +189,7 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
             logging.info('%s: Infusing',self.name)
         else: 
             logging.error('%s: not infusing correctly',self.name)
+            self.serialcon.close()
             raise pumperror("Incorrect response to irun")
     
     def set_wrun(self,bytes=60): #sets pump to withdraw (flow into syringe)
@@ -188,6 +199,7 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
             logging.info('%s: Withdrawing',self.name)
         else: 
             logging.error('%s: not withdrawing correctly',self.name)
+            self.serialcon.close()
             raise pumperror("Incorrect response to wrun")
     
     def wait_for_target(self,i_or_w,bytes=60): #infuse or withdraw, then wait for target
@@ -198,6 +210,7 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
                 wait_resp = self.write_read('DEL',bytes=bytes) #check volume delivered 
                 if ":" == wait_resp[-1] and i == 0:
                     logging.error('%s: not infusing or withdrawing',self.name)
+                    self.serialcon.close()
                     raise pumperror("not infusing or withdrawing")
                 elif ":"  == wait_resp[-1] and i !=0:
                     logging.info('%s: target volume has been reached',self.name)
@@ -212,6 +225,7 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
                 wait_resp = self.write_read('DEL',bytes=bytes) #check volume delivered 
                 if ":" == wait_resp[-1] and i == 0:
                     logging.error('%s: not infusing or withdrawing',self.name)
+                    self.serialcon.close()
                     raise pumperror("not infusing or withdrawing")
                 elif ":"  == wait_resp[-1] and i !=0:
                     logging.info('%s: target volume has been reached',self.name)
@@ -221,6 +235,7 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
                 i= i+1
         else:
             logging.error('%s: need flow direction (infuse or withdraw)',self.name)
+            self.serialcon.close()
             raise pumperror("need flow direction (infuse or withdraw)")
     
     def set_poll(self,i_or_w,bytes=60): #checks volume delivered 
@@ -232,6 +247,8 @@ class Pump2000: #defines Pump2000 class with serial connection, address, and nam
         elif(poll_pump[-1] == "<"): #still withdrawing 
             logging.info('%s: has not reached target volume and is still withdrawing',self.name)
         else: 
+            logging.error('%s: Incorrect response to polling',self.name)
+            self.serialcon.close()
             raise pumperror("Incorrect response to polling")
     
     def clear_target_volume(self,bytes=60): #clear delivered  volume 
@@ -259,6 +276,7 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
         version_pump = self.write_read('ver', bytes=bytes)
         if(len(version_pump) == 0): # no response... probably not connected correctly or maybe a baud rate error
             logging.error('%s: not connected to pump correctly at address %s',self.name, self.address)
+            self.serialcon.close()
             raise pumperror("Not connected to pump correctly")
         if(version_pump[-1]=="*"):  #target volume had been reached, need to clear target volume then try again
             self.clear_target_volume(bytes=60)
@@ -267,55 +285,62 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
             logging.info('%s: created at address %s', self.name,self.address)
         else:
             logging.error('%s: not connected to pump correctly at address %s',self.name, self.address)
+            self.serialcon.close()
             raise pumperror("wrong address")
         
     def set_dia(self,diameter,bytes=60): #sets diameter 
         if(float(diameter) > 45 or float(diameter) < 0.1):  #checks if diameter is within 
+            logging.error('%s: diameter (%s mm) is out of range', self.name,str(diameter))
+            self.serialcon.close()
             raise pumperror("diameter is out of range")
         if(len(remove_string_extras(str(diameter)))>6):  #checks if diameter needs to be truncated
             new_d = remove_string_extras(str(diameter))[0:6]
-            logging.error('%s: set diameter (%s mm) has been truncated to %s mm', 
+            logging.info('%s: set diameter (%s mm) has been truncated to %s mm', 
                           self.name,str(diameter), str(new_d))
             diameter = new_d
         diam_resp = self.write_read('diameter', bytes=60) 
         dia_response = remove_string_extras(remove_string_extras(diam_resp[-15:-8]))
-        if(dia_response == remove_string_extras(str(diameter))): #checks if currently set diameter matches the new diameter argument 
+        if(float(dia_response) == float(remove_string_extras(str(diameter)))): #checks if currently set diameter matches the new diameter argument 
             logging.info('%s: did not update diameter because set diameter (%s mm) already matches diameter returned by pump (%s mm)', 
                          self.name,str(diameter),dia_response)
         else:  # if new diameter does not match the last set diameter, then diameter is updated  
             self.write_read('diameter ' + str(diameter), bytes=60) 
             diam = self.write_read('diameter', bytes=60)  #checks updated diameter matches the newly set diameter 
             dia_response = remove_string_extras(remove_string_extras(diam[-15:-8]))
-            if(dia_response == remove_string_extras(str(diameter))):
+            if(float(dia_response) == float(remove_string_extras(str(diameter)))):
                 logging.info('%s: diameter set to %s mm', self.name,str(diameter))
             else:
                 logging.error('%s: set diameter (%s mm) does not match diameter returned by pump (%s mm)', 
                               self.name,str(diameter),dia_response)
+                self.serialcon.close()
                 raise pumperror("Diameter not updated correctly")
         
     def set_infuse_rate(self,infuse_rate,infuse_rate_units):  #sets the infuse rate (flow rate out from syringe)
         if(len(remove_string_extras(str(infuse_rate)))>6):  #checks if flow rate needs to be truncated 
             new_ir = remove_string_extras(str(infuse_rate))[0:6]
-            logging.error('%s: set infuse rate (%s %s) has been truncated to %s %s', 
+            logging.info('%s: set infuse rate (%s %s) has been truncated to %s %s', 
                           self.name,str(infuse_rate),infuse_rate_units, str(new_ir),infuse_rate_units)
+            self.serialcon.close()
             infuse_rate = new_ir
         irate = self.write_read('irate ' + str(infuse_rate) +' ' + infuse_rate_units, bytes=60) # set infuse rate 
         irate_resp = self.write_read('irate', bytes=60) #reads updated flow rate
         irate_respr=irate_resp.split(':')[1]
         if "Out of range" in irate:  # if flow rate is out of the range for the syringe's diameter 
-            logging.info('%s: infuse rate (%s %s) is out of range', self.name,str(infuse_rate),infuse_rate_units)
+            logging.error('%s: infuse rate (%s %s) is out of range', self.name,str(infuse_rate),infuse_rate_units)
+            self.serialcon.close()
             raise pumperror("Infuse rate is out of range")
-        if(remove_string_extras(irate_respr[0:12]).split(' ')[0] == str(infuse_rate)):
+        if(float(remove_string_extras(irate_respr[0:12]).split(' ')[0]) == float(str(infuse_rate))):
             logging.info('%s: infuse rate set to %s %s', self.name,str(infuse_rate),infuse_rate_units)
         else:
             logging.error('%s: set infuse rate (%s %s) does not match flowrate returned by pump (%s)', 
                          self.name,str(infuse_rate),infuse_rate_units, remove_string_extras(irate_respr[0:12]).split(' ')[0])
+            self.serialcon.close()
             raise pumperror("Infuse Rate not updated correctly")
     
     def set_withdraw_rate(self,withdraw_rate,withdraw_rate_units):  #sets the withdraw rate (flow rate into syringe)
         if(len(remove_string_extras(str(withdraw_rate)))>6):  #checks if flow rate needs to be truncated 
             new_wr = remove_string_extras(str(withdraw_rate))[0:6]
-            logging.error('%s: set withdraw rate (%s %s) has been truncated to %s %s', 
+            logging.info('%s: set withdraw rate (%s %s) has been truncated to %s %s', 
                           self.name,str(withdraw_rate),withdraw_rate_units, str(new_wr),withdraw_rate_units)
             withdraw_rate = new_wr
         wrate = self.write_read('wrate ' + str(withdraw_rate) +' ' + withdraw_rate_units, bytes=60) # set withdraw rate
@@ -323,18 +348,21 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
         wrate_respr=wrate_resp.split(':')[1]
         if "Out of range" in wrate:  # if flow rate is out of the range for the syringe's diameter
             logging.error('%s: withdraw rate (%s %s) is out of range', self.name,str(withdraw_rate),withdraw_rate_units)
+            self.serialcon.close()
             raise pumperror("Withdraw rate is out of range")
-        if(remove_string_extras(wrate_respr[0:12]).split(' ')[0] == str(withdraw_rate)): #checks updated flow rate matches newly set flow rate
+        if(float(remove_string_extras(wrate_respr[0:12]).split(' ')[0]) == float(str(withdraw_rate))): #checks updated flow rate matches newly set flow rate
             logging.info('%s: withdraw rate set to %s %s', self.name,str(withdraw_rate),withdraw_rate_units)
         else:
             logging.error('%s: set withdraw rate (%s %s) does not match flowrate returned by pump (%s)', 
                          self.name,str(withdraw_rate),withdraw_rate_units, remove_string_extras(wrate_respr[0:12]).split(' ')[0])
+            self.serialcon.close()
             raise pumperror("Withdraw Rate not updated correctly")
         
     def set_target_volume(self,target_volume,target_volume_units,bytes=60):  #sets the target volume for a pump
+        self.clear_target_volume(bytes=bytes)
         if(len(remove_string_extras(str(target_volume)))>6): #checks if target volume needs to be truncated 
             new_tv = remove_string_extras(str(target_volume))[0:6]
-            logging.error('%s: set target volume (%s %s) has been truncated to %s %s', 
+            logging.info('%s: set target volume (%s %s) has been truncated to %s %s', 
                           self.name,str(target_volume), target_volume_units, str(new_tv), target_volume_units)
             target_volume = new_tv
         self.write_read('tvolume ' + str(target_volume) + ' ' + target_volume_units, bytes=bytes) #sets target volume
@@ -343,7 +371,7 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
     def set_syringe_volume(self,syringe_volume,syringe_volume_units,bytes=60): #sets the syringe volume for a pump
         if(len(remove_string_extras(str(syringe_volume)))>6): #checks if syringe volume needs to be truncated 
             new_tv = remove_string_extras(str(syringe_volume))[0:6]
-            logging.error('%s: set syringe volume (%s %s) has been truncated to %s %s', 
+            logging.info('%s: set syringe volume (%s %s) has been truncated to %s %s', 
                           self.name,str(syringe_volume), syringe_volume_units, str(new_tv), syringe_volume_units)
             syringe_volume = new_tv
         self.write_read('svolume ' + str(syringe_volume) + ' ' + syringe_volume_units, bytes=bytes) #sets syringe volume 
@@ -355,6 +383,7 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
             logging.info('%s: stopped',self.name)
         else: 
             logging.error('%s: Incorrect response to stop',self.name)
+            self.serialcon.close()
             raise pumperror("Incorrect response to stop")
     
     def set_irun(self,bytes=60): #sets pump to infuse (flow out from syringe)
@@ -363,6 +392,7 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
             logging.info('%s: Infusing',self.name)
         else: 
             logging.error('%s: not infusing correctly',self.name)
+            self.serialcon.close()
             raise pumperror("Incorrect response to irun")
     
     def set_wrun(self,bytes=60):  #sets pump to withdraw (flow into syringe)
@@ -371,6 +401,7 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
             logging.info('%s: Withdrawing',self.name)
         else: 
             logging.error('%s: not withdrawing correctly',self.name)
+            self.serialcon.close()
             raise pumperror("Incorrect response to wrun")
     
     def wait_for_target(self,i_or_w,bytes=60): #infuse or withdraw, then wait for target
@@ -381,6 +412,7 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
                 wait_resp = self.write_read('ivolume',bytes=bytes) #check volume delivered
                 if ":" == wait_resp[-1] and i == 0:
                     logging.info('%s: not infusing or withdrawing',self.name)
+                    self.serialcon.close()
                     raise pumperror("not infusing or withdrawing")
                 elif "*"  == wait_resp[-1] and i !=0:
                     logging.info('%s: target volume has been reached',self.name)
@@ -395,6 +427,7 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
                 wait_resp = self.write_read('wvolume',bytes=bytes) #check volume delivered 
                 if ":" == wait_resp[-1] and i == 0:
                     logging.info('%s: not infusing or withdrawing',self.name)
+                    self.serialcon.close()
                     raise pumperror("not infusing or withdrawing")
                 elif "*"  == wait_resp[-1] and i !=0:
                     logging.info('%s: target volume has been reached',self.name)
@@ -404,6 +437,7 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
                 i= i+1
         else:
             logging.error('%s: need flow direction (infuse or withdraw)',self.name)
+            self.serialcon.close()
             raise pumperror("need flow direction (infuse or withdraw)")
     
     def set_poll(self,i_or_w,bytes=60):  #checks volume delivered 
@@ -413,6 +447,7 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
             poll_pump = self.write_read('wvolume', bytes=bytes)
         else:
             logging.error('%s: need flow direction (infuse or withdraw)',self.name)
+            self.serialcon.close()
             raise pumperror("need flow direction (infuse or withdraw)")
         if(poll_pump[-1] == ":"):  #pump has stopped 
             logging.info('%s: pump has stopped',self.name)
@@ -421,6 +456,8 @@ class PumpUltra: #defines PumpUltra class with serial connection, address, and n
         elif(poll_pump[-1] == "<"): #still withdrawing 
             logging.info('%s: has not reached target volume and is still withdrawing',self.name)
         else: 
+            logging.error('%s: Incorrect response to polling',self.name)
+            self.serialcon.close()
             raise pumperror("Incorrect response to polling")
     
     def clear_target_volume(self,bytes=60): #clear target volume 
@@ -488,21 +525,24 @@ if __name__ == '__main__':
                 poll_pump = pump_ultra.set_poll(i_or_w="withdraw",bytes=60)
             else:
                 if args.diameter: # if diameter is an argument, set diameter at pump
-                    dia_pump = pump_ultra.set_dia(args.diameter,bytes=60)
+                    dia_pump = pump_ultra.set_dia(args.diameter,bytes=60) 
                 if args.syringe_volume: # if syringe volume is an arugment, set syringe volume 
                     sv_pump = pump_ultra.set_syringe_volume(args.syringe_volume, args.syringe_volume_units,bytes=60)
-                if args.target_volume: # if target volume is an arugment, clear target volume and then set target volume 
-                    ctv = pump_ultra.clear_target_volume(bytes=60)
+                if args.target_volume: # if target volume is an arugment,  set target volume 
                     tv_pump = pump_ultra.set_target_volume(args.target_volume, args.target_volume_units,bytes=60)
                 if args.infuse_rate: # if infuse rate is an arugment, set infuse rate
                     if args.infuse_rate_units: #also needs infuse rate units 
                         ir_pump = pump_ultra.set_infuse_rate(args.infuse_rate, args.infuse_rate_units)
                     else: #if not units send error
+                        logging.error('%s: Incorrect response to polling',pump_ultra.name)
+                        chain.close()
                         raise pumperror("Need infuse rate units")    
                 if args.withdraw_rate: # if withdraw rate is an arugment, set infuse rate
                     if args.withdraw_rate_units: #also needs withdraw rate units
                         wr_pump = pump_ultra.set_withdraw_rate(args.withdraw_rate, args.withdraw_rate_units)
                     else: #if not units send error
+                        logging.error('%s: Incorrect response to polling',pump_ultra.name)
+                        chain.close()
                         raise pumperror("Need withdraw rate units")
                 if args.infuse:
                     irun = pump_ultra.set_irun(bytes=60) #runs the pump in the infuse direction 
@@ -541,6 +581,8 @@ if __name__ == '__main__':
                         if args.infuse_rate_units:  #also needs infuse rate units
                             ir_pump = pump_2000.set_infuse_rate(args.infuse_rate, args.infuse_rate_units)
                         else:  #if no units in arugments raise error
+                            logging.error('%s: Need infuse rate units',PHD2000.name)
+                            chain.close()
                             raise pumperror("Need infuse rate units")
                 if args.infuse: 
                     irun = pump_2000.set_irun(bytes=30) #runs the pump in the infuse direction    
@@ -549,12 +591,16 @@ if __name__ == '__main__':
                         if args.withdraw_rate_units: #also needs withdraw rate units
                             wr_pump = pump_2000.set_withdraw_rate(args.withdraw_rate, args.withdraw_rate_units)
                         else:  #if not units send error
+                            logging.error('%s: Need withdraw rate units',PHD2000.name)
+                            chain.close()
                             raise pumperror("Need withdraw rate units")
                     wrun = pump_2000.set_wrun(bytes=30) #runs the pump in the withdraw direction
                 if args.infuse_wait: #infuse then wait for target volume 
                     if args.target_volume:   
                         iw = pump_2000.wait_for_target(i_or_w="infuse",bytes=30) #runs the pump then waits for target 
                     else: 
+                        logging.error('%s: Need target volume',PHD2000.name)
+                        chain.close()
                         raise pumperror("Need target volume")
                 if args.withdraw_wait: #withdraw then wait for target volume 
                     if args.target_volume: 
@@ -562,9 +608,13 @@ if __name__ == '__main__':
                             if args.withdraw_rate_units:
                                 wr_pump = pump_2000.set_withdraw_rate(args.withdraw_rate, args.withdraw_rate_units)
                             else: 
+                                logging.error('%s: Need withdraw rate units',PHD2000.name)
+                                chain.close()
                                 raise pumperror("Need withdraw rate units")  
                         ww = pump_2000.wait_for_target(i_or_w="withdraw",bytes=30) #runs the pump then waits for target 
                     else: 
+                        logging.error('%s: Need target volume',PHD2000.name)
+                        chain.close()
                         raise pumperror("Need target volume")
                 
     finally:
