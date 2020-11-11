@@ -15,6 +15,7 @@
 
 ## Connecting pumps to computer 
 For PHD2000
+![PHD 2000](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/phd2000_pic.PNG)
 1. Connect USB-serial adapter to computer
 2. Connect DB-9 serial to serial to RJ-11 adapter
 3. Connect RJ-11 cable to adapter and to the RS-232 IN port of the pump with address 00
@@ -24,8 +25,11 @@ For PHD2000
 7. Check pump chain configurations:
    1. Press SET key
    2. Use RS232 key to scroll until "Pump Chain" is displayed
-   3. When "Pump Chain" is displayed press enter, set address, and baud rate (baud rate of 9600 is used for this code)
-   4. If chaining, all pumps need to have the same Baud Rate
+   3. When "Pump Chain" is displayed press enter
+   4. Type in address and press enter
+   5. Type in baud rate (baud rate of 9600 is used for this code) and press enter
+   6. Press enter one last time to save input
+   7. If chaining, all pumps need to have the same Baud Rate, and the first pump in the chain needs to have address 00
 
 For PHD Ultra
 1. Connect USB-serial adapter to computer and the RS-485 IN port of the pump with address 00
@@ -36,7 +40,15 @@ For PHD Ultra
    2. Choose Pump Address button and enter pump address 
    3. Press Accept to save chages 
    4. From Settings menu, choose Pump Baud Rate and enter baud rate (9600 is used for this code)
-   5. If chaining, all pumps need to have the same Baud Rate
+   5. If chaining, all pumps need to have the same Baud Rate, and the first pump in the chain needs to have address 00 
+
+## Checking Device Manager 
+If the computer port connected to the pumps is unkown, check the name of the port. 
+1. Open Device Manager, on windows 10, by searching for "Device Manager" on the search field in the taskbar. 
+2. Double click on "Ports (COM & LPT)" 
+3. Find the "Prolific USB-to-Serial Comm Port" 
+4. The name of the port is in parenthesis next to "Prolific USB-to-Serial Comm Port"
+5. If the names don't match exactly, look for another a name that is similar to "USB-to-Serial" 
 
 ## Features
 - set diameter
@@ -48,7 +60,7 @@ For PHD Ultra
 - infuse or withdraw to a target volume and wait until volume has been reached
 - check if target volume has been reached (poll) 
 
-## Usage 
+## Command Line Usage 
 Run ```python pump_code_pack.py --help ``` to see command line options.
 
 ### Stop
