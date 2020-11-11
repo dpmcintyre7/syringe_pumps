@@ -103,4 +103,33 @@ python pump_code_pack.py -p COM4 -a 0 -poll -PHD2000
 ```
 
 
+## Python Script Usage 
+
+### Set Up
+Import logging and pump_code_pack
+```
+import pump_code_pack
+import logging
+```
+To allow logging functionality, add in the following code. Substitute "example.log" the name of the log file you would like to add to
+```
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+logging.basicConfig(filename='example.log', level=logging.DEBUG,format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+```
+Define the serial connection and pumps 
+```
+sc_com4 = pump_code_pack.Serial_connection('COM4')
+address = 0
+pump_2000_1 = pump_code_pack.Pump2000(sc_com4,address, name='PHD2000_1')
+address = 1
+pump_2000_2 = pump_code_pack.Pump2000(sc_com4,address, name='PHD2000_2')
+```
+
+### Stop 
+After the pumps have been defined, run the following to stop pumps
+```
+pump_2000_1.set_stop()
+pump_2000_2.set_stop()
+```
 
