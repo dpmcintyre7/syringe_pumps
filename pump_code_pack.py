@@ -581,7 +581,7 @@ if __name__ == '__main__':
                         if args.infuse_rate_units:  #also needs infuse rate units
                             ir_pump = pump_2000.set_infuse_rate(args.infuse_rate, args.infuse_rate_units)
                         else:  #if no units in arugments raise error
-                            logging.error('%s: Need infuse rate units',PHD2000.name)
+                            logging.error('%s: Need infuse rate units',pump_2000.name)
                             chain.close()
                             raise pumperror("Need infuse rate units")
                 if args.infuse: 
@@ -591,7 +591,7 @@ if __name__ == '__main__':
                         if args.withdraw_rate_units: #also needs withdraw rate units
                             wr_pump = pump_2000.set_withdraw_rate(args.withdraw_rate, args.withdraw_rate_units)
                         else:  #if not units send error
-                            logging.error('%s: Need withdraw rate units',PHD2000.name)
+                            logging.error('%s: Need withdraw rate units',pump_2000.name)
                             chain.close()
                             raise pumperror("Need withdraw rate units")
                     wrun = pump_2000.set_wrun(bytes=30) #runs the pump in the withdraw direction
@@ -599,7 +599,7 @@ if __name__ == '__main__':
                     if args.target_volume:   
                         iw = pump_2000.wait_for_target(i_or_w="infuse",bytes=30) #runs the pump then waits for target 
                     else: 
-                        logging.error('%s: Need target volume',PHD2000.name)
+                        logging.error('%s: Need target volume',pump_2000.name)
                         chain.close()
                         raise pumperror("Need target volume")
                 if args.withdraw_wait: #withdraw then wait for target volume 
@@ -608,12 +608,12 @@ if __name__ == '__main__':
                             if args.withdraw_rate_units:
                                 wr_pump = pump_2000.set_withdraw_rate(args.withdraw_rate, args.withdraw_rate_units)
                             else: 
-                                logging.error('%s: Need withdraw rate units',PHD2000.name)
+                                logging.error('%s: Need withdraw rate units',pump_2000.name)
                                 chain.close()
                                 raise pumperror("Need withdraw rate units")  
                         ww = pump_2000.wait_for_target(i_or_w="withdraw",bytes=30) #runs the pump then waits for target 
                     else: 
-                        logging.error('%s: Need target volume',PHD2000.name)
+                        logging.error('%s: Need target volume',pump_2000.name)
                         chain.close()
                         raise pumperror("Need target volume")
                 
