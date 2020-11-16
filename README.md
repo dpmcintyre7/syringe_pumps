@@ -133,3 +133,98 @@ pump_2000_1.set_stop()
 pump_2000_2.set_stop()
 ```
 
+### Run Indefinitely  
+After the pumps have been defined, run the following to infuse indefinitely with a syringe diameter of 9.52 mm, infuse rate of 10 ul/min. The "set_pump_mode()" command is only used for PHD 2000 pumps to run indefinitely.
+```
+diameter = 9.52
+pump_2000_1.set_dia(diameter)
+
+pump_2000_1.set_pump_mode()
+
+infuse_rate = 10
+infuse_rate_units = 'ul/min'
+pump_2000_1.set_infuse_rate(infuse_rate, infuse_rate_units)
+
+pump_2000_1.set_irun()
+```
+After the pumps have been defined, run the following to withdraw indefinitely with a syringe diameter of 9.52 mm, withdraw rate of 12 ul/min. The "set_pump_mode()" command is only used for PHD 2000 pumps to run indefinitely.
+```
+diameter = 9.52
+pump_2000_2.set_dia(diameter)
+
+pump_2000_2.set_pump_mode()
+
+withdraw_rate = 12
+withdraw_rate_units = 'ul/min'
+pump_2000_2.set_withdraw_rate(withdraw_rate, withdraw_rate_units)
+
+pump_2000_2.set_wrun()
+```
+### Run pump and eventually stop once target volume has been reached 
+After the pumps have been defined, run the following to infuse and stop at target volume with the parameters: syringe diameter (9.52 mm), target volume (1 ml), and infuse rate (10 ul/min). 
+```
+diameter = 9.52
+pump_2000_1.set_dia(diameter)
+
+target_volume = 1
+target_volume_units = 'ml'
+pump_2000_1.set_target_volume(target_volume, target_volume_units)
+
+infuse_rate = 10
+infuse_rate_units = 'ul/min'
+pump_2000_1.set_infuse_rate(infuse_rate, infuse_rate_units)
+
+pump_2000_1.set_irun()
+```
+After the pumps have been defined, run the following to infuse and stop at target volume with the parameters: syringe diameter (9.52 mm), target volume (1 ml), and withdraw rate (10 ul/min). 
+```
+diameter = 9.52
+pump_2000_2.set_dia(diameter)
+
+target_volume = 1
+target_volume_units = 'ml'
+pump_2000_2.set_target_volume(target_volume, target_volume_units)  # set target volume 
+
+withdraw_rate = 12
+withdraw_rate_units = 'ul/min'
+pump_2000_2.set_withdraw_rate(withdraw_rate, withdraw_rate_units) # set withdraw rate 
+
+pump_2000_2.set_wrun() # withdraw and wait for target volume
+```
+### Run pump and wait for target volume to be reached 
+After the pumps have been defined, run the following to infuse (and wait for target volume to be reached) with the parameters: syringe diameter (9.52 mm), target volume (1 ml), and infuse rate (10 ul/min). 
+```
+diameter = 9.52
+pump_2000_1.set_dia(diameter)
+
+target_volume = 1
+target_volume_units = 'ml'
+pump_2000_1.set_target_volume(target_volume, target_volume_units) # set target volume 
+
+infuse_rate = 10
+infuse_rate_units = 'ul/min'
+pump_2000_1.set_infuse_rate(infuse_rate, infuse_rate_units) # set infuse rate with infuse rate units 
+
+pump_2000_1.wait_for_target(i_or_w="infuse") # infuse and wait for target volume
+```
+After the pumps have been defined, run the following to withdraw (and wait for target volume to be reached) with the parameters: syringe diameter (9.52 mm), target volume (1 ml), and withdaw rate (12 ul/min). 
+```
+diameter = 9.52
+pump_2000_2.set_dia(diameter) # set syringe diameter
+
+target_volume = 1
+target_volume_units = 'ml'
+pump_2000_2.set_target_volume(target_volume, target_volume_units) # set target volume
+
+withdraw_rate = 12
+withdraw_rate_units = 'ul/min'
+pump_2000_2.set_withdraw_rate(withdraw_rate, withdraw_rate_units) # set withdraw rate 
+
+pump_2000_2.wait_for_target(i_or_w="withdraw") # wuthdraw and wait for target volume
+```
+### Check if target volume has been reached (Poll)
+After the pumps have been defined and set to run in either infuse or withdraw, run the following to poll pump (check if target volume has been reached)
+```
+pump_2000_1.set_poll(i_or_w = "infuse")
+pump_2000_2.set_poll(i_or_w = "withdraw")
+```
