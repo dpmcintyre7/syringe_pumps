@@ -14,7 +14,7 @@
 - Cables to connect each pump to power 
 
 ## Connecting pumps to computer 
-For PHD2000
+### PHD2000 connections and set up
 ![PHD 2000](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/phd2000_pic.PNG)
 ![PHD 2000_back](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/phd2000_back.jpg)
 ![PHD 2000_cables](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/PHD2000_cables.png)
@@ -33,7 +33,7 @@ For PHD2000
    6. Press enter one last time to save input
    7. If chaining, all pumps need to have the same Baud Rate, and the first pump in the chain needs to have address 00
 
-For PHD Ultra
+### PHD Ultra connections and set up
 ![PHD Ultra_back](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/ultra_back.jpg)
 ![PHD Ultra_cables](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/PHDULTRA_cables.png)
 1. Connect USB-serial adapter to computer (if needed connect to male-to-male gender changer) and the RS-232 IN port of the pump with address 00
