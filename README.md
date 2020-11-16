@@ -16,6 +16,7 @@
 ## Connecting pumps to computer 
 For PHD2000
 ![PHD 2000](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/phd2000_pic.PNG)
+![PHD 2000_back](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/phd2000_back.jpg)
 1. Connect USB-serial adapter to computer
 2. Connect DB-9 serial to RJ-11 adapter
 3. Connect RJ-11 cable to adapter and to the RS-232 IN port of the pump with address 00
