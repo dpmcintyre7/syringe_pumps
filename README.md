@@ -17,7 +17,7 @@
 For PHD2000
 ![PHD 2000](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/phd2000_pic.PNG)
 1. Connect USB-serial adapter to computer
-2. Connect DB-9 serial to serial to RJ-11 adapter
+2. Connect DB-9 serial to RJ-11 adapter
 3. Connect RJ-11 cable to adapter and to the RS-232 IN port of the pump with address 00
 4. If chaining, connect second RJ-11 cable to RS-232 OUT port of the pump with address 00 and the RS-232 IN port of the pump with address 01.
 5. Continue connecting the RJ-11 cables to the pumps in address order (can only connect max 99 pumps) 
@@ -32,7 +32,7 @@ For PHD2000
    7. If chaining, all pumps need to have the same Baud Rate, and the first pump in the chain needs to have address 00
 
 For PHD Ultra
-1. Connect USB-serial adapter to computer and the RS-485 IN port of the pump with address 00
+1. Connect USB-serial adapter to computer (if needed connect to male-to-male gender changer) and the RS-232 IN port of the pump with address 00
 2. If chaining, connect IEEE 1394 cable to the RS-485 OUT port of the pump with address 00 and the RS-485 IN port of the pump with address 01.
 3. Continue connecting the IEEE 1394 cables to the pumps in address order (can only connect max 99 pumps)
 4. Check Pump Chain configurations: 
