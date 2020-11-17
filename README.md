@@ -1,20 +1,45 @@
 # Syringe Pump Automation 
 
 ## Table of Contents  
-1. [Requirements](#reqs)  
-2. [Connecting pumps to computer](#connecting) 
+1. [Features Summary](#features)
+2. [Requirements](#reqs)  
+3. [Installation Instructions](#installation)  
+4. [Connecting Pumps to Computer](#connecting) 
    1. [PHD 2000 connections and set up](#phd2000connecting)
    2. [PHD Ultra connections and set up](#phdultraconnecting)
-3. [Checking Device Manager](#devicemanager)
-4. [Features Summary](#features)
-5. [Command Line Usage](#commandline)
-6. [Python Script Usage](#pythonscript)
+5. [Checking Device Manager](#devicemanager) 
+6. [Command Line Usage](#commandline)
+7. [Python Script Usage](#pythonscript)
+
+
+<a name="features"></a>
+## Features Summary
+### Parameters:
+- set diameter
+- set infuse/withdraw rate
+- set target volume
+- set syringe volume
+### Functions: 
+- infuse or withdraw indefinitely
+- infuse or withdraw to a target volume 
+- infuse or withdraw to a target volume and wait until volume has been reached
+- check if target volume has been reached (poll) 
+- stop pump 
+### Running Methods: 
+- external python script
+- command line
+- write to log
+- daisy chain mutliple pumps together
+
 
 <a name="reqs"></a>
 ## Requirements 
+### Computational requirements: 
 - Python
 - Pyserial 
 - Argparse 
+- Logging
+### Connections/adapters 
 - USB-serial adapter
 - For PHD2000
   - Serial to RJ-11 adapter
@@ -24,8 +49,20 @@
   - For chaining: multiple RS-485 cables
 - Cables to connect each pump to power 
 
+
+<a name="installation"></a>
+## Installation Instructions
+1. Install conda 
+2. Download environment.yml and pump_code_pack.py
+3. Create the environment from the environment.yml file 
+```
+conda env create -f environment.yml
+```
+4. Make sure the pump_code_pack.py is in your current directory, where you'll run your script from
+
+
 <a name="connecting"></a>
-## Connecting pumps to computer 
+## Connecting Pumps to Computer 
 <a name="phd2000connecting"></a>
 ### PHD 2000 connections and set up
 ![PHD 2000](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/phd2000_pic.PNG)
@@ -69,17 +106,6 @@ If the computer port connected to the pumps is unkown, check the name of the por
 4. The name of the port is in parenthesis next to "Prolific USB-to-Serial Comm Port"
 5. If the names don't match exactly, look for another a name that is similar to "USB-to-Serial" 
 
-<a name="features"></a>
-## Features Summary
-- set diameter
-- set infuse/withdraw rate
-- set target volume
-- set syringe volume
-- infuse or withdraw indefinitely
-- infuse or withdraw to a target volume 
-- infuse or withdraw to a target volume and wait until volume has been reached
-- check if target volume has been reached (poll) 
-
 
 <a name="commandline"></a>
 ## Command Line Usage 
@@ -91,31 +117,31 @@ Run the following, to stop the PHD2000 pump at address 00 using COM4 port
 python pump_code_pack.py -p COM4 -a 0 -stop -PHD2000
 ```
 ### Run indefinitely 
-Set the PHD2000 pump at address 00 using COM4 port to infuse indefinitely with the parameters: syringe diameter (12 mm) and infuse rate (1 ml/min)
+Set the PHD2000 pump at address 00 using COM4 port to infuse indefinitely with the parameters: syringe diameter (12 mm) and infuse rate (1 ul/min)
 ```
-python pump_code_pack.py -p COM4 -a 0 -d 12 -i 1 -iu ml/min -infuse -PHD2000
+python pump_code_pack.py -p COM4 -a 0 -d 12 -i 1 -iu ul/min -infuse -PHD2000
 ```
-Set the PHD2000 pump at address 00 using COM4 port to withdraw indefinitely with the parameters: syringe diameter (12 mm) and withdraw rate (2 ml/min)
+Set the PHD2000 pump at address 00 using COM4 port to withdraw indefinitely with the parameters: syringe diameter (12 mm) and withdraw rate (2 ul/min)
 ```
-python pump_code_pack.py -p COM4 -a 0 -d 12 -w 2 -wu ml/min -withdraw -PHD2000
+python pump_code_pack.py -p COM4 -a 0 -d 12 -w 2 -wu ul/min -withdraw -PHD2000
 ```
 ### Run pump and eventually stop once target volume has been reached 
-Set the PHD2000 pump at address 00 using COM4 port to infuse (and stop once target volume has been reached) with the parameters: syringe diameter (12 mm), infuse rate (1 ml/min), target volume (1 ml)
+Set the PHD2000 pump at address 00 using COM4 port to infuse (and stop once target volume has been reached) with the parameters: syringe diameter (12 mm), infuse rate (1 ul/min), target volume (1 ml)
 ```
-python pump_code_pack.py -p COM4 -a 0 -d 12 -i 1 -iu ml/min -t 1 -tu ml -infuse -PHD2000
+python pump_code_pack.py -p COM4 -a 0 -d 12 -i 1 -iu ul/min -t 1 -tu ml -infuse -PHD2000
 ```
-Set the PHD2000 pump at address 00 using COM4 port to withdraw (and stop once target volume has been reached) with the parameters: syringe diameter (12 mm), withdraw rate (2 ml/min), target volume (1 ml)
+Set the PHD2000 pump at address 00 using COM4 port to withdraw (and stop once target volume has been reached) with the parameters: syringe diameter (12 mm), withdraw rate (2 ul/min), target volume (1 ml)
 ```
-python pump_code_pack.py -p COM4 -a 0 -d 12 -w 2 -wu ml/min -t 1 -tu ml -withdraw -PHD2000
+python pump_code_pack.py -p COM4 -a 0 -d 12 -w 2 -wu ul/min -t 1 -tu ml -withdraw -PHD2000
 ```
 ### Run pump and wait for target volume to be reached 
-Set the PHD2000 pump at address 00 using COM4 port to infuse (and wait for target volume to be reached) with the parameters: syringe diameter (12 mm), infuse rate (1 ml/min), target volume (1 ml)
+Set the PHD2000 pump at address 00 using COM4 port to infuse (and wait for target volume to be reached) with the parameters: syringe diameter (12 mm), infuse rate (1 ul/min), target volume (1 ml)
 ```
-python pump_code_pack.py -p COM4 -a 0 -d 12 -i 1 -iu ml/min -t 1 -tu ml -infuse_wait -PHD2000
+python pump_code_pack.py -p COM4 -a 0 -d 12 -i 1 -iu ul/min -t 1 -tu ml -infuse_wait -PHD2000
 ```
-Set the PHD2000 pump at address 00 using COM4 port to withdraw  (and wait for target volume to be reached) with the parameters: syringe diameter (12 mm), withdraw rate (2 ml/min), target volume (1 ml)
+Set the PHD2000 pump at address 00 using COM4 port to withdraw  (and wait for target volume to be reached) with the parameters: syringe diameter (12 mm), withdraw rate (2 ul/min), target volume (1 ml)
 ```
-python pump_code_pack.py -p COM4 -a 0 -d 12 -w 2 -wu ml/min -t 1 -tu ml -withdraw_wait -PHD2000
+python pump_code_pack.py -p COM4 -a 0 -d 12 -w 2 -wu ul/min -t 1 -tu ml -withdraw_wait -PHD2000
 ```
 ### Check if target volume has been reached (Poll)
 First, pump needs to be running (with -infuse or -withdraw and target volume).
