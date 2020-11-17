@@ -1,5 +1,16 @@
-# syringe_pumps
+# Syringe Pump Automation 
 
+## Table of Contents  
+1. [Requirements](#reqs)  
+2. [Connecting pumps to computer](#connecting) 
+   1. [PHD 2000 connections and set up](#phd2000connecting)
+   2. [PHD Ultra connections and set up](#phdultraconnecting)
+3. [Checking Device Manager](#devicemanager)
+4. [Features Summary](#features)
+5. [Command Line Usage](#commandline)
+6. [Python Script Usage](#pythonscript)
+
+<a name="reqs"></a>
 ## Requirements 
 - Python
 - Pyserial 
@@ -13,8 +24,10 @@
   - For chaining: multiple RS-485 cables
 - Cables to connect each pump to power 
 
+<a name="connecting"></a>
 ## Connecting pumps to computer 
-### PHD2000 connections and set up
+<a name="phd2000connecting"></a>
+### PHD 2000 connections and set up
 ![PHD 2000](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/phd2000_pic.PNG)
 ![PHD 2000_back](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/phd2000_back.jpg)
 ![PHD 2000_cables](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/PHD2000_cables.png)
@@ -33,6 +46,7 @@
    6. Press enter one last time to save input
    7. If chaining, all pumps need to have the same Baud Rate, and the first pump in the chain needs to have address 00
 
+<a name="phdultraconnecting"></a>
 ### PHD Ultra connections and set up
 ![PHD Ultra_back](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/ultra_back.jpg)
 ![PHD Ultra_cables](https://github.com/CIDARLAB/syringe_pumps/blob/main/pump_connections/PHDULTRA_cables.png)
@@ -46,6 +60,7 @@
    4. From Settings menu, choose Pump Baud Rate and enter baud rate (9600 is used for this code)
    5. If chaining, all pumps need to have the same Baud Rate, and the first pump in the chain needs to have address 00 
 
+<a name="devicemanager"></a>
 ## Checking Device Manager 
 If the computer port connected to the pumps is unkown, check the name of the port. 
 1. Open Device Manager, on windows 10, by searching for "Device Manager" on the search field in the taskbar. 
@@ -54,7 +69,8 @@ If the computer port connected to the pumps is unkown, check the name of the por
 4. The name of the port is in parenthesis next to "Prolific USB-to-Serial Comm Port"
 5. If the names don't match exactly, look for another a name that is similar to "USB-to-Serial" 
 
-## Features
+<a name="features"></a>
+## Features Summary
 - set diameter
 - set infuse/withdraw rate
 - set target volume
@@ -64,6 +80,8 @@ If the computer port connected to the pumps is unkown, check the name of the por
 - infuse or withdraw to a target volume and wait until volume has been reached
 - check if target volume has been reached (poll) 
 
+
+<a name="commandline"></a>
 ## Command Line Usage 
 Run ```python pump_code_pack.py --help ``` to see command line options.
 
@@ -107,6 +125,7 @@ python pump_code_pack.py -p COM4 -a 0 -poll -PHD2000
 ```
 
 
+<a name="pythonscript"></a>
 ## Python Script Usage 
 
 ### Set Up
