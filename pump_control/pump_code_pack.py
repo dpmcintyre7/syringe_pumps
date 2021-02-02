@@ -19,7 +19,7 @@ def remove_string_extras(string):
     string = string.rstrip(' .')
     return string
 
-class qui: #defines Pump2000 class with serial connection, address, and name (used in logging)
+class Pump2000: #defines Pump2000 class with serial connection, address, and name (used in logging)
     def __init__(self, serial_connection, address, name):
         self.serialcon = serial_connection
         self.address = '{0:02.0f}'.format(int(address))
